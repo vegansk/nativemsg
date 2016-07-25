@@ -1,0 +1,11 @@
+{
+    "name": "Test host client application",
+    "description": "Test host client application",
+    "version": "0.1.0",
+    "manifest_version": 2,
+    "app": {
+        "background": {
+            "scripts": ["background.js"]
+        }
+    }
+}
