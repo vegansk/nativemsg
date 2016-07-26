@@ -5,6 +5,9 @@ import ospaths, strutils
 template dep(name: untyped): untyped =
   exec "nim " & astToStr(name)
 
+template dep(name: untyped, params: string): untyped =
+  exec "nim " & params & " " & astToStr(name)
+
 proc checkDirExists(file: string) =
   let dir = file.splitPath[0]
   if not dir.dirExists:
@@ -52,7 +55,10 @@ proc mkJs(srcFile, jsFile: string; debug = true) =
     
   setCommand "js", srcFile
 
-var DEBUG = true
+when defined(debug):
+  const DEBUG = true
+else:
+  const DEBUG = false
 proc HOST_APP: string = (thisDir() / "bin" / "host" & (if DEBUG: "_d" else: "")).toExe
 const APP_ID = "org.acme.test_host"
 const EXTENSION_ID = "nokipbkffkbijoiefiejfoohdnmpcmmm"
@@ -78,6 +84,12 @@ task build_host, "Build host application":
   mkExe("tests/host/main", HOST_APP(), debug = DEBUG)
   registerHostApp()
 
+task test_host, "Test host application":
+  dep build_host, "-d:debug"
+  --run
+  --threads:on
+  mkExe("tests/test_host", "bin/test_host", debug = true)
+
 proc chromeCopyStatic =
   for f in listFiles("tests" / "chrome"):
     cpFile f, "build_ext" / f.splitPath[1]
@@ -96,3 +108,4 @@ task run_chrome_extension, "Run chrome extension":
   dep build_chrome_extension
   dep build_host
   exec "google-chrome".toExe & " --load-and-launch-app=" & thisDir() / "build_ext"
+

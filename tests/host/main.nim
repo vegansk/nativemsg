@@ -6,6 +6,7 @@ logging.addHandler(fl)
 proc readMessage: string =
   var size = 0'i32
   var read = stdin.readBuffer(addr size, sizeof(size))
+  info "Size: ", size
   assert(read == sizeof(size))
   var buff = newSeq[char](size.int + 1)
   read = 0
@@ -22,6 +23,7 @@ proc writeMessage(msg: string) =
   assert(written == sizeof(size))
   written = stdout.writeBuffer(msg.cstring, size)
   assert(written == size)
+  stdout.flushFile
 
 proc main =
   info "Host process is running"
@@ -33,6 +35,8 @@ proc main =
     let msg = readMessage()
     info("Received: " & msg)
     writeMessage(msg)
+    info("Written: " & msg)
 
+setStdIoUnbuffered()
 when isMainModule:
   main()
